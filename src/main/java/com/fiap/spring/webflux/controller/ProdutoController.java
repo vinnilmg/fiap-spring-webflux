@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 public class ProdutoController {
     private final ProdutoService produtoService;
@@ -18,14 +20,15 @@ public class ProdutoController {
     }
 
     @GetMapping("/produto")
-    public ResponseEntity<Flux<Produto>> getProdutos() {
+    public Flux<ResponseEntity<List<Produto>>> getProdutos() {
         final var produtos = produtoService.buscarTodos();
-        return ResponseEntity.ok(produtos);
+        return Flux.just(ResponseEntity.ok(produtos));
     }
 
     @GetMapping("/produto/{id}")
-    public ResponseEntity<Mono<Produto>> getProduto(@PathVariable Long id) {
-        final var produto = produtoService.buscarPorId(id);
-        return ResponseEntity.ok(produto);
+    public Mono<ResponseEntity<Produto>> getProduto(@PathVariable Long id) {
+        return produtoService.buscarPorId(id)
+                .map(value -> Mono.just(ResponseEntity.ok(value)))
+                .orElseGet(() -> Mono.just(ResponseEntity.notFound().build()));
     }
 }
