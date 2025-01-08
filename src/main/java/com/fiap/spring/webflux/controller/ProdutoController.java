@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-
-import static java.util.Objects.nonNull;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class ProdutoController {
@@ -17,11 +17,15 @@ public class ProdutoController {
         this.produtoService = produtoService;
     }
 
+    @GetMapping("/produto")
+    public ResponseEntity<Flux<Produto>> getProdutos() {
+        final var produtos = produtoService.buscarTodos();
+        return ResponseEntity.ok(produtos);
+    }
+
     @GetMapping("/produto/{id}")
-    public ResponseEntity<Produto> getProduto(@PathVariable Long id) {
-        final var produto = produtoService.buscarPorIdBloqueante(id);
-        return nonNull(produto)
-                ? ResponseEntity.ok(produto)
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<Mono<Produto>> getProduto(@PathVariable Long id) {
+        final var produto = produtoService.buscarPorId(id);
+        return ResponseEntity.ok(produto);
     }
 }

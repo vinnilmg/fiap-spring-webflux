@@ -3,6 +3,8 @@ package com.fiap.spring.webflux.service;
 import com.fiap.spring.webflux.model.Produto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,20 +20,15 @@ public class ProdutoService {
         produtos.add(new Produto(3L, "Tablet", "Tablet Apple", 1000.0));
     }
 
-    public Produto buscarPorIdBloqueante(Long id) {
+    public Flux<Produto> buscarTodos() {
+        return Flux.fromIterable(produtos);
+    }
 
-        try {
-            if (id == 1) {
-                log.info("Sleeping...");
-                Thread.sleep(3000);
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
-
+    public Mono<Produto> buscarPorId(Long id) {
         return produtos.stream()
-                .filter(produto -> produto.id().equals(id))
+                .filter(p -> p.id().equals(id))
                 .findFirst()
-                .orElse(null);
+                .map(Mono::just)
+                .orElseGet(Mono::empty);
     }
 }
